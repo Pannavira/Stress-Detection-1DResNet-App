@@ -1,92 +1,109 @@
-# Stress Detection: Edge Detection Prototype
+# Stress Detection: Edge 1DResNet Prototype
 
-A research-grade Android application for real-time stress detection using a **Knowledge Distilled (KD) ResNet Student Model**. This application is designed to run locally on edge devices, processing physiological signals (ECG and EDA) from the WESAD dataset with high efficiency and accuracy.
-
----
-
-## 🚀 Key Features
-
-- **Local Inference Engine**: Powered by `onnxruntime-react-native` for low-latency, private, and offline stress classification.
-- **Signal Visualization**: Real-time rendering of ECG (Heart Activity) and EDA (Skin Conductance) waves using `react-native-chart-kit`.
-- **Research Data Support**: Integrated file picker to load and analyze custom WESAD signal slices in JSON format.
-- **Scientific Calibration**: Implements **Post-Hoc Temperature Scaling** to align model confidence with empirical research results.
-- **Performance Tracking**: Live display of inference latency (ms) and raw model logits.
+A high-performance Android application for real-time stress detection using a **Knowledge Distilled (KD) ResNet Student Model**. This application is designed to run locally on edge devices, processing physiological signals (ECG and EDA) with high efficiency and privacy.
 
 ---
 
-## 🛠 Technical Architecture
+## 🚀 Getting Started
 
-### Model Specifications
-- **Architecture**: Lightweight ResNet-based Student Model.
-- **Input Shape**: `(1, 2, 7680)` — 1 Batch, 2 Channels (ECG, EDA), 60-second window.
-- **Sampling Rate**: 140Hz (derived from 700Hz original via decimation factor 5).
-- **Complexity**: ~120k Parameters.
-- **Format**: Mobile-optimized ONNX.
+Follow these instructions to get a copy of the project up and running on your local machine for development and testing.
 
-### Signal Pipeline
-1. **Filtering**: Pre-filtered using 4th-order Butterworth bandpass (ECG: 0.5-40Hz, EDA: 0.05-5Hz).
-2. **Normalization**: Global subject-wise Z-score normalization to preserve physiological variance.
-3. **Segmentation**: 60-second non-overlapping windows (7680 samples).
+### 📋 Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+*   **Node.js**: Version 18 or later ([Download](https://nodejs.org/))
+*   **npm**: Usually comes with Node.js
+*   **Java Development Kit (JDK)**: Version 17 ([Recommended: Zulu JDK 17](https://www.azul.com/downloads/?version=java-17-lts&package=jdk))
+*   **Android Studio**: Latest version with SDK 34+ installed.
+*   **Expo CLI**: Global installation is optional as it's typically run via `npx`.
 
 ---
 
-## 📥 Installation
+### 🛠 Installation & Setup
 
-### Prerequisites
-- **Node.js** (v18+) & **npm**
-- **Android Studio** with SDK 34+
-- **Java JDK 17** (Ensure `JAVA_HOME` is set)
-- **Expo CLI** (`npm install -g expo-cli`)
+#### 1. Clone the Repository
+Open your terminal and run the following commands:
+```bash
+git clone https://github.com/Pannavira/Stress-Detection-1DResNet-App.git
+cd Stress-Detection-1DResNet-App
+```
 
-### Setup Steps
-1. **Clone and Install Dependencies**:
-   ```bash
-   cd aplikasi
-   npm install
-   ```
+#### 2. Install Dependencies
+Install the required Node.js packages:
+```bash
+npm install
+```
 
-2. **Configure Environment**:
-   Ensure your system environment variables include:
-   - `ANDROID_HOME`: Path to your Android Sdk folder.
-   - `JAVA_HOME`: Path to your Android Studio JBR or OpenJDK folder.
+#### 3. Environment Configuration
+Ensure your system environment variables are correctly set:
+*   `ANDROID_HOME`: Path to your Android SDK (e.g., `C:\Users\Name\AppData\Local\Android\Sdk`)
+*   `JAVA_HOME`: Path to your JDK 17 installation.
 
-3. **Build the Development Client**:
-   This app uses native C++ code (ONNX), so it requires a custom build (not Expo Go):
-   ```bash
-   npx expo run:android
-   ```
+---
+
+### 📱 Running the Application
+
+Since this app uses native C++ code via `onnxruntime-react-native`, it **cannot** run in the standard Expo Go app. You must build a development client or run the native build command.
+
+#### Run on Android Emulator/Device
+1.  Connect your Android device via USB (with Debugging enabled) or start an Android Emulator.
+2.  Execute the build command:
+    ```bash
+    npx expo run:android
+    ```
+    *This command will prebuild the native Android project and install the app on your device.*
+
+#### Run on iOS (macOS only)
+1.  Install CocoaPods: `cd ios && pod install && cd ..`
+2.  Execute the build command:
+    ```bash
+    npx expo run:ios
+    ```
 
 ---
 
 ## 📖 Usage Guide
 
-1. **Prepare Data**: Use the provided Python script `wesad_to_json.py` to generate research-grade JSON slices from the WESAD `.pkl` files.
-2. **Load Data**:
-   - Transfer the `.json` files to your Android device/emulator (Downloads folder).
-   - Click **"PICK JSON FILE"** in the app and select your sample.
-3. **Visualize**: View the physiological signal patterns in the top dashboard to verify data integrity.
-4. **Analyze**: Press **"RUN RESEARCH ANALYSIS"**.
-   - **NORMAL (Green)**: Indicates parasympathetic dominance/resting state.
-   - **STRESS (Red)**: Indicates sympathetic activation/high arousal.
+1.  **Load Data**:
+    *   Click the **"PICK JSON FILE"** button.
+    *   You can use the provided sample file located in `assets/dummy_data.json` or any compatible WESAD-formatted JSON.
+2.  **Visualize**: The top dashboard will render the ECG and EDA waveforms to verify signal integrity.
+3.  **Analyze**: Press **"ANALYZE"** to trigger the ONNX inference engine.
+    *   **NORMAL**: Indicates a calm/resting state.
+    *   **STRESS**: Indicates detected sympathetic activation.
+4.  **Monitor**: View the **Inference Latency** and **Execution Logs** at the bottom to see real-time performance metrics.
 
 ---
 
-## 🔬 Research Note: Model Calibration
+## 🔬 Technical Architecture
 
-During deployment, we observed that models trained via Knowledge Distillation (KD) with high temperature targets ($T=4.0$) produce conservative probabilities. 
+### Model Specifications
+*   **Architecture**: Lightweight 1D-ResNet (Student Model).
+*   **Input**: 60-second window (7680 samples) of ECG and EDA signals.
+*   **Engine**: Powered by `onnxruntime-react-native` for on-device inference.
+*   **Calibration**: Implements **Temperature Scaling** to provide reliable confidence scores.
 
-To ensure the user interface provides interpretable confidence scores without altering the underlying classification logic, we applied **Temperature Scaling** ($T=0.125$) during the post-processing phase. This aligns the visual certainty (80-95%) with the model's objective accuracy (82%+) as reported in the associated research paper.
+### Key Technologies
+*   **React Native / Expo**: Cross-platform framework.
+*   **ONNX Runtime**: Cross-platform model acceleration.
+*   **React Native Chart Kit**: Real-time signal visualization.
 
 ---
 
 ## 📂 Project Structure
-- `App.js`: Main UI and ONNX inference logic.
-- `utils/preprocessing.js`: Mathematical implementation of Z-score normalization and signal trimming.
-- `assets/model.onnx`: The serialized ResNet student model.
-- `android/`: Native Android project configurations (Legacy Architecture enabled for ONNX compatibility).
+*   `App.js`: Core logic for UI and ONNX model inference.
+*   `utils/preprocessing.js`: Signal normalization and windowing logic.
+*   `assets/model.onnx`: The serialized ResNet student model.
+*   `assets/dummy_data.json`: Sample data for testing.
 
 ---
 
+## 🤝 Research & Credits
 **Author**: Pannavira  
 **Research Area**: Knowledge Distillation for Physiological Signal Processing  
-**Dataset**: WESAD (Wearable Stress and Affect Detection)
+**Dataset**: Based on the WESAD (Wearable Stress and Affect Detection) dataset.
+
+---
+
+**Link to Repository**: [https://github.com/Pannavira/Stress-Detection-1DResNet-App](https://github.com/Pannavira/Stress-Detection-1DResNet-App)
